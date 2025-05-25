@@ -2,8 +2,10 @@
 #define __SONAR__H__
 
 #include <avr/io.h>
-#include <avr/delay.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
+
+#include <Arduino.h>
 
 #define TRIG_DDR DDRB
 #define TRIG_PORT PORTB
@@ -15,7 +17,7 @@
 #define ECHO_PIN PD2 // Using PD2 for ECHO_PIN, which is INT0 on ATmega328P
 
 void initSonar(void);
-void initTimer0(void);
+void initTimer2(void);
 void initEchoInterrupt(void);
 
 uint16_t measureDistance(void);
