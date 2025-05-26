@@ -21,10 +21,7 @@ void initTimer2(void);
 void initEchoInterrupt(void);
 
 uint16_t measureDistance(void);
-
-
 void sendTriggerPulse(void);
-
 void checkObstacle(void);
 
 

@@ -32,7 +32,7 @@ void initTimer2(void) {
     TCCR2B |= (1 << CS22); // 16MHz / 64 = 250kHz, each tick = 4us
 
     // Enable Timer0 overflow interrupt
-    TIMSK2 |= (1 << TOIE0);
+    TIMSK2 |= (1 << TOIE2);
     
     // Enable global interrupts
     sei();
@@ -113,8 +113,9 @@ uint16_t measureDistance(void) {
     // Serial.println(durationUs);
 
     // Calculate distance in cm (speed of sound is approximately 343 m/s or 0.0343 cm/us)
-    uint16_t distanceCm = (durationUs * 0.0343) / 2; // Divide by 2 for round trip
-    
+    // uint16_t distanceCm = (durationUs * 0.0343) / 2; // Divide by 2 for round trip
+    uint16_t distanceCm = durationUs / 58;
+
     return distanceCm; // Return the measured distance in cm
 }
 
