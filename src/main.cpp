@@ -1,33 +1,40 @@
 #include <Arduino.h>
-#include "MotorControl.h"
 #include "Sonar.h"
 #include "ServoControl.h"
+#include "MotorControl.h"
 
-extern AF_DCMotor motor1;
-extern AF_DCMotor motor2;
-extern AF_DCMotor motor3;
-extern AF_DCMotor motor4;
+void mySetup() {
+    Serial.begin(9600);
+    Serial.println("Booting...");
+
+    initSonar();
+    initEchoInterrupt();
+
+    initServoControl();
+    initMotorControl();
+
+    Serial.println("Setup complete.");
+}
+
+int main() {
+    init();
+
+    mySetup();
+
+    // forwardMotors(); // Asigură-te că roboțelul se mișcă înainte
+    while (true) {
+        servo.write(SERVO_CENTER_ANGLE); // Poziționează servo la centrul său
+        // Așteaptă să se măsoare distanța
+        uint16_t distance = measureDistance();
+        Serial.print("Distanța măsurată: ");
+        Serial.print(distance);
+        Serial.println(" cm");
 
 
-int main(void) {
-  Serial.begin(9600);
-  Serial.println("Roomba Car Initializing...");
+        // Pauză între cicluri
+        Serial.println("---");
+        delay(1000);
+    }
 
-  initServoControl();
-  
-  initSonar();
-  initTimer2();
-  initEchoInterrupt();
-
-  Serial.println("Initialization complete. Starting distance measurement...");
-
-  while (1) {
-    // uint16_t distance = measureDistance();
-    // Serial.print("Distance: ");
-    // Serial.print(distance);
-    // Serial.println(" cm");
-    // _delay_ms(100); // Delay for stability
-    testServo(); // Test servo control
-  }
-
+    return 0;
 }

@@ -18,26 +18,6 @@ void initSonar(void) {
 
 }
 
-void initTimer2(void) {
-    // Set Timer0 to generate interrupt on overflow
-    TCCR2A = 0; // Normal mode
-
-    // Clear Timer/Counter Control Register B
-    TCCR2B = 0; 
-
-    // Clear Timer/Counter Register
-    TCNT2 = 0;
-
-    // Prescaler set to 64
-    TCCR2B |= (1 << CS22); // 16MHz / 64 = 250kHz, each tick = 4us
-
-    // Enable Timer0 overflow interrupt
-    TIMSK2 |= (1 << TOIE2);
-    
-    // Enable global interrupts
-    sei();
-}
-
 void initEchoInterrupt(void) {
     // Enable external interrupt on INT0 (ECHO_PIN)
     // Trigger on any logical change
@@ -51,16 +31,13 @@ void initEchoInterrupt(void) {
     EIMSK |= (1 << INT0);
 }
 
-ISR(TIMER2_OVF_vect) {
-    // Increment timer ticks on Timer0 overflow
-    timerTicks++; // Each overflow = 256 ticks = 256  *  4 us = 1024 us = 1.024 ms
-}
 
 ISR(INT0_vect) {
     // This interrupt is triggered on the rising edge of the ECHO_PIN
     if (ECHO_PIN_REGISTER & (1 << ECHO_PIN)) {
         // Rising edge detected, record the start time
-        echoStartTime = timerTicks * 256UL + TCNT2;
+        // echoStartTime = timerTicks * 256UL + TCNT2;
+        echoStartTime = micros(); // Use micros() for more precise timing
 
         // Set measuring flag to indicate we are measuring
         measuring = 1; 
@@ -70,7 +47,8 @@ ISR(INT0_vect) {
     } else {
         if (measuring) {
             // Falling edge detected, record the end time
-            echoEndTime = timerTicks * 256UL + TCNT2;
+            // echoEndTime = timerTicks * 256UL + TCNT2;
+            echoEndTime = micros(); // Use micros() for more precise timing
 
             // Clear measuring flag
             measuring = 0;
@@ -81,6 +59,7 @@ ISR(INT0_vect) {
     }
 }
 
+
 void sendTriggerPulse(void) {
     // Send a 10 microsecond pulse to TRIG_PIN
     TRIG_PORT |= (1 << TRIG_PIN); // Set TRIG_PIN HIGH
@@ -89,36 +68,24 @@ void sendTriggerPulse(void) {
 }
 
 uint16_t measureDistance(void) {
-    // Disable interrupts to ensure atomic operation
-    cli();
-    echoDone = 0; // Reset echo done flag
-    measuring = 0; // Reset measuring flag
-    timerTicks = 0; // Reset timer ticks
-    TCNT2 = 0; // Reset Timer0 counter
-    sei(); // Re-enable interrupts
+    echoDone = 0;
+    measuring = 0;
+    sendTriggerPulse();
 
-    sendTriggerPulse(); // Send the trigger pulse
     while (!echoDone) {
-        // Wait for the echo measurement to complete
+        // așteaptă ISR să seteze echoDone
     }
 
-    // Calculate the duration of the echo pulse
-    uint32_t durationTicks = echoEndTime - echoStartTime;
-    // Serial.print("Duration Ticks: ");
-    // Serial.println(durationTicks);
+    uint32_t durationUs;
+    if (echoEndTime >= echoStartTime) {
+        durationUs = echoEndTime - echoStartTime;
+    } else {
+        // micros() a dat overflow
+        durationUs = (0xFFFFFFFF - echoStartTime) + echoEndTime + 1;
+    }
 
-    // Convert timer ticks to microseconds (1 tick = 4 us)
-    uint32_t durationUs = durationTicks * 4;
-    // Serial.print("Duration (us): ");
-    // Serial.println(durationUs);
-
-    // Calculate distance in cm (speed of sound is approximately 343 m/s or 0.0343 cm/us)
-    // uint16_t distanceCm = (durationUs * 0.0343) / 2; // Divide by 2 for round trip
     uint16_t distanceCm = durationUs / 58;
 
-    return distanceCm; // Return the measured distance in cm
+    return distanceCm;
 }
 
-void checkObstacle(void) {
-
-}

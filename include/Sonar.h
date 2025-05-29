@@ -20,9 +20,9 @@ void initSonar(void);
 void initTimer2(void);
 void initEchoInterrupt(void);
 
+uint32_t getMilis(void);
+
 uint16_t measureDistance(void);
 void sendTriggerPulse(void);
-void checkObstacle(void);
-
 
 #endif // __SONAR__H__
