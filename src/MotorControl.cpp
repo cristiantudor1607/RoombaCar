@@ -31,14 +31,14 @@ void backwardMotors(void) {
     rightMotors.run(BACKWARD);
 }
 
-void leftTurnMotors(void) {
+void rightTurnMotors(void) {
     leftMotors.setSpeed(motorSpeed);
     rightMotors.setSpeed(motorSpeed);
     leftMotors.run(BACKWARD);
     rightMotors.run(FORWARD);
 }
 
-void rightTurnMotors(void) {
+void leftTurnMotors(void) {
     leftMotors.setSpeed(motorSpeed);
     rightMotors.setSpeed(motorSpeed);
     leftMotors.run(FORWARD);

@@ -2,8 +2,14 @@
 #define __STATE_H__
 
 typedef enum {
-    STATE_MOVE_FORWARD,
-    STATE_SCAN_ENV_INIT,
-} RoombaState_t;
+    IDLE,
+    GO_FORWARD,
+    GO_BACKWARD,
+    OBSTACLE_DETECTED,
+    DECIDE_DIRECTION,
+    TURN_LEFT,
+    TURN_RIGHT,
+    SCAN_ALL,
+} State_t;
 
 #endif // __STATE_H__

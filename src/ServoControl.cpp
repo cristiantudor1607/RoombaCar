@@ -1,22 +1,50 @@
 #include "ServoControl.h"
 
 Servo servo;
-int servoLookPointsCount;
-int servoLookAngles[SERVO_LOOK_POINTS];
-int servoDistances[SERVO_LOOK_POINTS];
+ServoLookPoint_t servoLookPoints[SERVO_LOOK_POINTS];
+int servoLookPointsCount = 0;
 
-static void initServoLookPoints(void) {
-    servoLookPointsCount = 0;
-    for (int angle = SERVO_MIN_ANGLE; angle <= SERVO_MAX_ANGLE; angle += SERVO_STEP) {
-        servoLookAngles[servoLookPointsCount] = angle;
-        servoDistances[servoLookPointsCount] = INT32_MAX;
+void initLookPoints(void) {
+    for (int i = SERVO_MIN_ANGLE; i <= SERVO_MAX_ANGLE; i += SERVO_STEP) {
+        servoLookPoints[servoLookPointsCount].angle = i;
+        servoLookPoints[servoLookPointsCount].distance = INT16_MIN;
         servoLookPointsCount++;
     }
 }
 
+void clearLookPoints(void) {
+    for (int i = 0; i < servoLookPointsCount; i++)
+        servoLookPoints[i].distance = INT16_MIN; // Reset distances to max
+}
+
+void scanAllLookPoints(void) {
+    for (int i = 0; i < servoLookPointsCount; i++) {
+        servo.write(servoLookPoints[i].angle);
+        delay(SERVO_DELAY); // Allow time for servo to move
+        uint16_t distance = measureDistance(); // Measure distance at this angle
+        servoLookPoints[i].distance = distance; // Store the measured distance
+    }
+
+    lookCenter(); // Center the servo after scanning
+}
+
+int getBestAngle(void) {
+    int bestIndex = 0;
+    uint32_t maxDistance = servoLookPoints[0].distance;
+
+    for (int i = 1; i < servoLookPointsCount; i++) {
+        if (servoLookPoints[i].distance > maxDistance) {
+            maxDistance = servoLookPoints[i].distance;
+            bestIndex = i;
+        }
+    }
+
+    return servoLookPoints[bestIndex].angle;
+}
+
 void initServoControl(void) {
-    initServoLookPoints();
-    
+    initLookPoints(); // Initialize look points
+
     servo.attach(SERVO_PIN);
     servo.write(SERVO_CENTER_ANGLE);
 }
